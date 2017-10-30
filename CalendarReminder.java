@@ -58,6 +58,14 @@ public class CalendarReminder extends Application {
     private String[] accounts;
     private String[] users = new String[]{"user1.txt","user2.txt"};
     private Button newEvent = new Button();
+    private Button acceptNewEvent = new Button();
+    private RowConstraints row1 = new RowConstraints();
+    private RowConstraints row2 = new RowConstraints();
+    private RowConstraints row3 = new RowConstraints();
+    private RowConstraints row4 = new RowConstraints();
+    private RowConstraints row5 = new RowConstraints();
+    private RowConstraints row6 = new RowConstraints();
+    private RowConstraints row7 = new RowConstraints();
 
 
 
@@ -192,14 +200,48 @@ public class CalendarReminder extends Application {
         newEvent.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e){
-                infoText.setText("Please fill in the description, date and time of event, and optional location or more" +
+                acceptNewEvent.setText("Accept");
+                acceptNewEvent.setMinSize(80,30);
+                acceptNewEvent.setMaxSize(80,30);
+                infoText.wrapTextProperty();
+                infoText.setText("Please fill in the description, and date of event, and optional location or more" +
                         " detail, then click 'Accept' ");
                 Label Description = new Label ("Please Enter the description for your event");
-                infoText.wrapTextProperty();
+                Description.wrapTextProperty();
+
                 TextField descriptionText = new TextField();
+                descriptionText.setPromptText("Description");
+                descriptionText.setMaxSize(190,30);
+                descriptionText.setMinSize(190,30);
+
+                TextField dateText = new TextField();
+                dateText.setPromptText("Date (mm/dd/yy)");
+                dateText.setMaxSize(190,30);
+                dateText.setMinSize(190,30);
+
+                TextField locationText = new TextField();
+                locationText.setPromptText("Location");
+                locationText.setMaxSize(190,30);
+                locationText.setMinSize(190,30);
+
+                TextField moreInfoText = new TextField();
+                moreInfoText.setPromptText("More info");
+                moreInfoText.setMaxSize(190,30);
+                moreInfoText.setMinSize(190,30);
+
                 //descriptionText.
-                root.add(Description, 1,0);
+                //root.add(Description, 1,0);
+                row4.setPercentHeight(10);
+                row3.setPercentHeight(10);
+                row2.setPercentHeight(10);
+                row1.setPercentHeight(10);
+                row5.setPercentHeight(10);
                 root.add(descriptionText, 1,1);
+                root.add(dateText,1,2);
+                root.add(locationText,1,3);
+                root.add(moreInfoText,1,4);
+                root.add(acceptNewEvent,1,5);
+
             }//Handle
         });//EventHandler class
     }//button set up
@@ -242,16 +284,9 @@ public class CalendarReminder extends Application {
         ColumnConstraints column3 = new ColumnConstraints();
         column3.setPercentWidth(35);
         root.getColumnConstraints().addAll(column1,column2,column3);
-        RowConstraints row1 = new RowConstraints();
         row1.setPercentHeight(30);
-        RowConstraints row2 = new RowConstraints();
         row2.setPercentHeight(5);
-        RowConstraints row3 = new RowConstraints();
         row3.setPercentHeight(10);
-        RowConstraints row4 = new RowConstraints();
-        RowConstraints row5 = new RowConstraints();
-        RowConstraints row6 = new RowConstraints();
-        RowConstraints row7 = new RowConstraints();
         row7.setPercentHeight(1);
         root.getRowConstraints().addAll(row1,row2,row3,row4,row5,row6,row7);
         root.add(infoText,2,0);
