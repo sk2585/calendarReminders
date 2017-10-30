@@ -1,0 +1,17 @@
+#button {
+    -fx-background-color: linear-gradient(#BBCBD0, #E3DFE3);
+    -fx-border-color: #04585C
+
+
+}
+#button:hover{
+    -fx-background-color: linear-gradient(#E5E2F7, #DAE5EF);
+    -fx-border-color: #1D033A
+}
+#button:pressed{
+    -fx-background-color: linear-gradient(#F4FBFB, #F1E9F1);
+
+}
+#background{
+    -fx-background-color: linear-gradient(#D2EFF4, #C8DFE3);
+}
