@@ -14,9 +14,14 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
-
+import javafx.scene.canvas.Canvas;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.canvas.GraphicsContext;
 import java.io.IOException;
+import java.time.MonthDay;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 //xml file stuff:
 import java.io.File;
@@ -34,6 +39,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
+import org.w3c.dom.NamedNodeMap;
+import javax.xml.parsers.ParserConfigurationException;
+
 
 
 public class CalendarReminder extends Application {
@@ -41,22 +49,25 @@ public class CalendarReminder extends Application {
     private double paneHeight = 700;
     private GridPane root;
     private Scene gridScene;
+    private double canvasWidth = paneWidth*0.75;
+    private double canvasHeight = paneHeight*0.7;
     private final TextField userInputTextField = new TextField();
     private final TextField userInputTextFieldPass = new TextField();
     private ArrayList<String> userNames = new ArrayList<>();
     private  ArrayList eventInfo = new ArrayList<>();
-    private String[] passwords= new String[]{};
+   // private String[] passwords= new String[]{};
     private Label infoText = new Label ("Welcome! Please enter your username and password, if you don't have an account" +
                                                 "click 'New User' ");
     private HBox buttonHolder;
     private Button[] buttons;
     private HBox buttonHolder2;
     private Button[] buttons2;
-    private String fileName = "Accounts.txt";
+    /*private String fileName = "Accounts.txt";
     private String path = "/Users/sophiekofsky/Documents/";
     private String document = "";
-    private String[] accounts;
+    private String[] accounts; */
     private String[] users = new String[]{"user1.txt","user2.txt"};
+    private String currentUser = new String();
     private Button newEvent = new Button();
     private Button acceptNewEvent = new Button();
     private RowConstraints row1 = new RowConstraints();
@@ -66,6 +77,13 @@ public class CalendarReminder extends Application {
     private RowConstraints row5 = new RowConstraints();
     private RowConstraints row6 = new RowConstraints();
     private RowConstraints row7 = new RowConstraints();
+    private ColumnConstraints column1 = new ColumnConstraints();
+    private TextField descriptionText = new TextField();
+    private TextField dateText = new TextField();
+    private TextField locationText = new TextField();
+    private TextField moreInfoText = new TextField();
+    Canvas myCanvas = new Canvas(canvasWidth,canvasHeight);
+
 
 
 
@@ -80,6 +98,7 @@ public class CalendarReminder extends Application {
         xmlFileReader("user1.txt");
         xmlFileUser();
         xmlFileWriterNewUser("Lucy", "bon");
+       xmlFileWriterAddEvents("Christmas ","10/25/17","New York", "user3.txt");
 //        xmlFileWriterAddEvents("Christmas", "12/25/17", "NYC", "user3.txt");
 
     }//start
@@ -101,7 +120,7 @@ public class CalendarReminder extends Application {
                 new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
-                        for(int i = 0; i < userNames.size(); i = i +2) {
+                        for(int i = 0; i < userNames.size(); i = i +3) {
                             //System.out.println(userInputTextField.getText());
                             String name = userInputTextField.getText();
                             String user = userNames.get(i);
@@ -122,31 +141,17 @@ public class CalendarReminder extends Application {
                                     userInputTextField.setVisible(false);
                                     infoText.setText("");
                                     newEvent.setText(" + ");
-                                    root.add(newEvent, 9, 0);
+                                    ColumnConstraints column4 = new ColumnConstraints();
+                                    column4.setPercentWidth(35);
+                                    root.add(newEvent, 10, 0);
+                                    canvasSetUp();
+                                    currentUser = userNames.get(i+2);
+                                    System.out.println(currentUser);
+
                                 }
-                                /*else{
-                                    infoText.setText("Wrong username or password entered");
-                                } */
 
-                            }  /*else {
-                                infoText.setText("Wrong username or password entered");
-                            } */
+                            }
                         }
-                            /* System.out.println("end of if");
-                            buttonHolder.setVisible(false);
-                            buttonHolder2.setVisible(false);
-                            //password = userInputTextFieldPass.getText();
-                            userInputTextFieldPass.setVisible(false);
-                            //userName = userInputTextField.getText();
-                            userInputTextField.setVisible(false);
-                            infoText.setText("");
-                            newEvent.setText(" + ");
-                            root.add(newEvent, 9, 0); */
-
-
-                        //System.out.println(password);
-                        //System.out.println(userName);
-
                     }
                 }
         );
@@ -170,36 +175,13 @@ public class CalendarReminder extends Application {
                         userInputTextFieldPass.setVisible(false);
                         userInputTextFieldPass.setText("");
                         userInputTextField.setText("");
-                        /*Read r = new Read((path + fileName));
-                        r.readFile();
-                        document = r.getText();
-                        infoText.setText("Type in what you want to be your username then hit the enter key");
-                        userInputTextField.setOnAction(new EventHandler<ActionEvent>()  {
-                            public void handle(ActionEvent e) {
-                                    Writer w = new Writer((path + fileName));
-                                    w.writeToFile(document + "\n User: " + userInputTextField.getText());
-
-                                    Read r = new Read((path + fileName));
-                                    r.readFile();
-                                    document = r.getText();
-                                    userInputTextField.clear();
-                                    infoText.setText("Type in your password, then hit enter key.");
-                                    userInputTextField.setOnAction(new EventHandler<ActionEvent>()  {
-                                    public void handle(ActionEvent e) {
-                                        w.writeToFile(document + "\n Password: " + userInputTextField.getText());
-                                        userInputTextField.clear();
-                                        infoText.setText("Thanks for Creating an account!");
-                                        userInputTextField.setVisible(false);
-                                    }//inner handle
-                                });//EventHandler class
-                            }//inner handle
-                        });//EventHandler class */
 
                     }//outer handle
                 });//setOnAction
         newEvent.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e){
+                newEvent.setVisible(false);
                 acceptNewEvent.setText("Accept");
                 acceptNewEvent.setMinSize(80,30);
                 acceptNewEvent.setMaxSize(80,30);
@@ -209,22 +191,22 @@ public class CalendarReminder extends Application {
                 Label Description = new Label ("Please Enter the description for your event");
                 Description.wrapTextProperty();
 
-                TextField descriptionText = new TextField();
+
                 descriptionText.setPromptText("Description");
                 descriptionText.setMaxSize(190,30);
                 descriptionText.setMinSize(190,30);
 
-                TextField dateText = new TextField();
+
                 dateText.setPromptText("Date (mm/dd/yy)");
                 dateText.setMaxSize(190,30);
                 dateText.setMinSize(190,30);
 
-                TextField locationText = new TextField();
+
                 locationText.setPromptText("Location");
                 locationText.setMaxSize(190,30);
                 locationText.setMinSize(190,30);
 
-                TextField moreInfoText = new TextField();
+
                 moreInfoText.setPromptText("More info");
                 moreInfoText.setMaxSize(190,30);
                 moreInfoText.setMinSize(190,30);
@@ -244,6 +226,26 @@ public class CalendarReminder extends Application {
 
             }//Handle
         });//EventHandler class
+        acceptNewEvent.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                String[] newEventInfo = new String[4];
+                newEventInfo[0] = descriptionText.getText();
+                newEvent.setVisible(true);
+                acceptNewEvent.setVisible(false);
+                newEventInfo[1] = dateText.getText();
+                newEventInfo[2] = locationText.getText();
+                newEventInfo[3] = moreInfoText.getText();
+                descriptionText.setVisible(false);
+                dateText.setVisible(false);
+                locationText.setVisible(false);
+                moreInfoText.setVisible(false);
+                infoText.setVisible(false);
+                System.out.println(newEventInfo[0] + newEventInfo[1]+newEventInfo[2]+newEventInfo[3]);
+                myCanvas.setVisible(false);
+
+            }
+        });
     }//button set up
 
     private void userInput() {
@@ -277,7 +279,6 @@ public class CalendarReminder extends Application {
         userInputTextField.setPromptText("Username");
         root.add(userInputTextFieldPass, 2, 4);
         root.add(userInputTextField, 2, 2);
-        ColumnConstraints column1 = new ColumnConstraints();
         column1.setPercentWidth(35);
         ColumnConstraints column2 = new ColumnConstraints();
         column2.setPercentWidth(1);
@@ -315,25 +316,21 @@ public class CalendarReminder extends Application {
     private void xmlFileReader(String pathname){
 
             try {
-                //array users = new Array[];
-                //System.out.print(users[0] + " " + users[1]);
-                for (int i = 0; i <users.length; i ++){
-                   // System.out.println(users.length);
-                   // System.out.println("system.out " + users[i]);
-                    File inputFile = new File(users[i]);
+                    File inputFile = new File(pathname);
                     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
                     DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                     Document doc = dBuilder.parse(inputFile);
                     doc.getDocumentElement().normalize();
-                    System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+                   // System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
                     NodeList nList = doc.getElementsByTagName("event");
+                    //System.out.println(nList.getLength());
                     NodeList nList2 = doc.getElementsByTagName("username");
-                    System.out.println("----------------------------");
                     for(int temp = 0; temp <nList2.getLength(); temp++){
                         Node nNode2 = nList2.item(temp);
                         Element eElement2 = (Element) nNode2;
                         System.out.println((eElement2.getAttribute("username")));
-                        userNames.add((eElement2.getAttribute("username")));
+                       // userNames.add((eElement2.getAttribute("username")));
+                        //userNames.add(pathname);
                     }//end for loop
                     for (int temp = 0; temp < nList.getLength(); temp++) {
                         Node nNode = nList.item(temp);
@@ -343,32 +340,11 @@ public class CalendarReminder extends Application {
                             eventInfo.add((eElement.getAttribute("event")));
                             eventInfo.add((eElement.getElementsByTagName("date").item(0).getTextContent()));
                             eventInfo.add((eElement.getElementsByTagName("location").item(0).getTextContent()));
-                            System.out.println(eventInfo);
-                       /*System.out.println("Username : "
-                                + eElement.getAttribute("username"));
-                        System.out.println("password: "
-
-                                + eElement
-                                .getElementsByTagName("password")
-                                .item(0)
-                                .getTextContent()); */
-                        /*    System.out.println("Event : "
-                                    + eElement.getAttribute("event"));
-                            System.out.println("date: "
-                                    + eElement
-                                    .getElementsByTagName("date")
-                                    .item(0)
-                                    .getTextContent());
-                            System.out.println("location : "
-                                    + eElement
-                                    .getElementsByTagName("location")
-                                    .item(0)
-                                    .getTextContent()); */
+                            System.out.println(temp + " event info " + eventInfo);
                          }//if statement
                         // System.out.println("end inner for loop");
                     }//inner for loop
-                    //System.out.println("end outer for loop");
-                }//outer for loop
+
             } catch (Exception e) {
                 e.printStackTrace();
             }//catch
@@ -395,6 +371,7 @@ public class CalendarReminder extends Application {
                     //System.out.println((eElement2.getAttribute("username")));
                     userNames.add((eElement2.getAttribute("username")));
                     userNames.add((eElement2.getElementsByTagName("password").item(0).getTextContent()));
+                    userNames.add(users[i]);
                     //System.out.println(userNames);
                     //System.out.println(userNames);
                 }//end for loop
@@ -414,7 +391,7 @@ public class CalendarReminder extends Application {
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             // root elements
             Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement("class");
+            Element rootElement = doc.createElement("user");
             doc.appendChild(rootElement);
             // username elements
             Element usernameE = doc.createElement("username");
@@ -452,45 +429,82 @@ public class CalendarReminder extends Application {
         }//catch
     }//xmlWriter
 
-    public void xmlFileWriterAddEvents(String eventName,String date, String location, String pathname) throws IOException, SAXException {
+    public void xmlFileWriterAddEvents(String eventName,String dateInfo, String locationInfo, String pathName) throws IOException, SAXException {
         try {
-            File inputFile = new File("user1.xml");
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.  parse(inputFile);
-            doc.getDocumentElement().normalize();
-            Element rootElement = doc.getElementById("class");
+            String filepath = pathName;
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.parse(filepath);
 
-            // username elements
-            Element eventE = doc.createElement("event");
-            rootElement.appendChild(eventE);
-            Attr attr = doc.createAttribute("event");
-            attr.setValue(eventName);
-            eventE.setAttributeNode(attr);
-            // set attribute to username element
-            attr.setValue(eventName);
-            eventE.setAttributeNode(attr);
+            // Get the root element
+            Node user = doc.getFirstChild();
 
-            // lastname elements
-            Element dateE = doc.createElement("date");
-            dateE.appendChild(doc.createTextNode(date));
-            eventE.appendChild(dateE);
-            // nickname elements
-            Element locationE = doc.createElement("location");
-            locationE.appendChild(doc.createTextNode(location));
-            eventE.appendChild(locationE);
+          
 
+            // Get the staff element by tag name directly
+            Node username = doc.getElementsByTagName("username").item(0);
+
+
+            // append a new node to staff
+            Element event = doc.createElement("event");
+
+            event.setAttribute("event", eventName);
+            username.appendChild(event);
+            Element date = doc.createElement("date");
+            date.appendChild(doc.createTextNode(dateInfo));
+            event.appendChild(date);
+            Element location = doc.createElement("location");
+            date.appendChild(doc.createTextNode(locationInfo));
+            event.appendChild(location);
+
+            // write the content into xml file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(pathname));
+            StreamResult result = new StreamResult(new File(filepath));
+            transformer.transform(source, result);
+
+            System.out.println("Done");
 
         } catch (ParserConfigurationException pce) {
             pce.printStackTrace();
         } catch (TransformerException tfe) {
             tfe.printStackTrace();
-        }//catch
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } catch (SAXException sae) {
+            sae.printStackTrace();
+        }
+    }
+    private void canvasSetUp(){
+
+        GraphicsContext gc = myCanvas.getGraphicsContext2D();
+        gc.setFill(Color.TRANSPARENT);
+        gc.fillRect(0, 0, myCanvas.getWidth(), myCanvas.getHeight());
+        row2.setPercentHeight(5);
+        row1.setPercentHeight(10);
+        column1.setPercentWidth(10);
+        root.add(myCanvas,1,3);
+        //root.setAlignment(Pos.CENTER);
+        gc.setFill(Color.MAROON);
+        gc.fillText("Event:", 10, 50);
+        gc.fillText("Date:", 180, 50);
+        gc.fillText("Location:", 350, 50);
+        for (int i = 0; i < eventInfo.size(); i= i +3){
+            for (int j = 0; j <3; j++){
+                gc.setFill(Color.BLACK);
+                gc.fillText(String.valueOf(eventInfo.get(i+j)), 10 + 170*(j), 50+30*(i/3+1));
+
+            }
+           // gc.fillText(String.valueOf(eventInfo.get(i)), 180, 80);
+
+            Calendar cal = Calendar.getInstance();
+
+            int d = cal.get(Calendar.DAY_OF_MONTH);
+
+
+
+        }
 
     }
-
 }//class
